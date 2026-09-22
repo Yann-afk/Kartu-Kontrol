@@ -1,0 +1,7 @@
+{
+  "name": "hafaltrack",
+  "type": "vue-vite",
+  "integrations": {
+    "capacitor": {}
+  }
+}

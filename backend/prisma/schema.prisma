@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PENGAJAR
+  ORANG_TUA
+}
+
+enum SumberInput {
+  SEKOLAH
+  RUMAH
+}
+
+enum JenisSetoran {
+  ZIYADAH
+  MUROJAAH
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  pengajar      Pengajar?
+  orangTua      OrangTua?
+  setoranDisimak KartuKontrol[] @relation("DisimakOleh")
+}
+
+model Pengajar {
+  id          String  @id @default(uuid()) @db.Uuid
+  userId      String  @unique @db.Uuid
+  namaLengkap String
+  nip         String? @db.VarChar(30)
+  noHp        String? @db.VarChar(20)
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kelas Kelas[]
+}
+
+model OrangTua {
+  id          String  @id @default(uuid()) @db.Uuid
+  userId      String  @unique @db.Uuid
+  namaLengkap String
+  noHp        String? @db.VarChar(20)
+  alamat      String? @db.Text
+
+  user  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anak  Santri[]
+}
+
+model Kelas {
+  id         String   @id @default(uuid()) @db.Uuid
+  namaKelas  String
+  pengajarId String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  pengajar Pengajar @relation(fields: [pengajarId], references: [id], onDelete: Restrict)
+  santri   Santri[]
+
+  @@index([pengajarId])
+}
+
+model Santri {
+  id          String @id @default(uuid()) @db.Uuid
+  nis         String @unique
+  namaLengkap String
+  orangTuaId  String @db.Uuid
+  kelasId     String @db.Uuid
+
+  orangTua     OrangTua      @relation(fields: [orangTuaId], references: [id], onDelete: Restrict)
+  kelas        Kelas         @relation(fields: [kelasId], references: [id], onDelete: Restrict)
+  kartuKontrol KartuKontrol[]
+
+  @@index([orangTuaId])
+  @@index([kelasId])
+}
+
+model Materi {
+  id         String @id @default(uuid()) @db.Uuid
+  namaSurah  String
+  juz        Int
+  totalAyat  Int
+
+  kartuKontrol KartuKontrol[]
+}
+
+model KartuKontrol {
+  id                  String        @id @default(uuid()) @db.Uuid
+  santriId            String        @db.Uuid
+  disimakOlehUserId   String        @db.Uuid
+  materiId            String        @db.Uuid
+  sumberInput         SumberInput
+  jenisSetoran        JenisSetoran
+  ayatMulai           Int
+  ayatSelesai         Int
+  nilai               String?       @db.VarChar(20)
+  catatan             String?       @db.Text
+  tanggalSetoran      DateTime      @default(now())
+  isVerifiedByPengajar Boolean      @default(false)
+  createdAt           DateTime      @default(now())
+
+  santri      Santri @relation(fields: [santriId], references: [id], onDelete: Restrict)
+  disimakOleh User   @relation("DisimakOleh", fields: [disimakOlehUserId], references: [id], onDelete: Restrict)
+  materi      Materi @relation(fields: [materiId], references: [id], onDelete: Restrict)
+
+  @@index([santriId, tanggalSetoran])
+  @@index([disimakOlehUserId])
+  @@index([materiId])
+  @@index([sumberInput])
+}
