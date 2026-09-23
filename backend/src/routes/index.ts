@@ -4,6 +4,7 @@ import { authenticate, requireRole } from "../middleware/auth.middleware";
 import * as authController from "../controllers/auth.controller";
 import * as kartuKontrolController from "../controllers/kartu-kontrol.controller";
 import * as masterController from "../controllers/master.controller";
+import * as adminController from "../controllers/admin.controller";
 
 export const routes = Router();
 
@@ -39,4 +40,36 @@ routes.delete(
   authenticate,
   requireRole(Role.ADMIN),
   kartuKontrolController.remove
+);
+
+const adminOnly = requireRole(Role.ADMIN);
+
+routes.get("/admin/stats", authenticate, adminOnly, adminController.getStats);
+
+routes.get("/admin/users", authenticate, adminOnly, adminController.listUsers);
+routes.post("/admin/users", authenticate, adminOnly, adminController.createUser);
+routes.get("/admin/users/:id", authenticate, adminOnly, adminController.getUserById);
+routes.patch("/admin/users/:id", authenticate, adminOnly, adminController.updateUser);
+routes.delete("/admin/users/:id", authenticate, adminOnly, adminController.deleteUser);
+
+routes.get("/admin/kelas", authenticate, adminOnly, adminController.listKelas);
+routes.post("/admin/kelas", authenticate, adminOnly, adminController.createKelas);
+routes.patch("/admin/kelas/:id", authenticate, adminOnly, adminController.updateKelas);
+routes.delete("/admin/kelas/:id", authenticate, adminOnly, adminController.deleteKelas);
+
+routes.get("/admin/santri", authenticate, adminOnly, adminController.listSantri);
+routes.post("/admin/santri", authenticate, adminOnly, adminController.createSantri);
+routes.patch("/admin/santri/:id", authenticate, adminOnly, adminController.updateSantri);
+routes.delete("/admin/santri/:id", authenticate, adminOnly, adminController.deleteSantri);
+
+routes.get("/admin/materi", authenticate, adminOnly, adminController.listMateri);
+routes.post("/admin/materi", authenticate, adminOnly, adminController.createMateri);
+routes.patch("/admin/materi/:id", authenticate, adminOnly, adminController.updateMateri);
+routes.delete("/admin/materi/:id", authenticate, adminOnly, adminController.deleteMateri);
+
+routes.get(
+  "/admin/kartu-kontrol",
+  authenticate,
+  adminOnly,
+  adminController.listSetoran
 );

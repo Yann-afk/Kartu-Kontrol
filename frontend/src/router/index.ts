@@ -13,6 +13,11 @@ import DashboardAnak from "@/pages/orangtua/DashboardAnak.vue";
 import FeedHafalanPage from "@/pages/orangtua/FeedHafalanPage.vue";
 import GrafikPerkembanganPage from "@/pages/orangtua/GrafikPerkembanganPage.vue";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage.vue";
+import UsersPage from "@/pages/admin/UsersPage.vue";
+import KelasPage from "@/pages/admin/KelasPage.vue";
+import SantriPage from "@/pages/admin/SantriPage.vue";
+import MateriPage from "@/pages/admin/MateriPage.vue";
+import SetoranPage from "@/pages/admin/SetoranPage.vue";
 
 interface AppRouteMeta {
   requiresAuth?: boolean;
@@ -61,6 +66,36 @@ const routes: RouteRecordRaw[] = [
     path: "/admin",
     name: "dashboard-admin",
     component: AdminDashboardPage,
+    meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/admin/users",
+    name: "admin-users",
+    component: UsersPage,
+    meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/admin/kelas",
+    name: "admin-kelas",
+    component: KelasPage,
+    meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/admin/santri",
+    name: "admin-santri",
+    component: SantriPage,
+    meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/admin/materi",
+    name: "admin-materi",
+    component: MateriPage,
+    meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/admin/setoran",
+    name: "admin-setoran",
+    component: SetoranPage,
     meta: { requiresAuth: true, roles: ["ADMIN"] } satisfies AppRouteMeta,
   },
   {

@@ -112,3 +112,37 @@ export interface CreateKartuKontrolPayload {
   catatan?: string | null;
   tanggalSetoran?: string;
 }
+
+export interface AdminPengajarDetail {
+  id: string;
+  namaLengkap: string;
+  nip: string | null;
+  noHp: string | null;
+}
+
+export interface AdminOrangTuaDetail {
+  id: string;
+  namaLengkap: string;
+  noHp: string | null;
+  alamat: string | null;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: Role;
+  createdAt: string;
+  namaLengkap: string | null;
+  pengajar: AdminPengajarDetail | null;
+  orangTua: AdminOrangTuaDetail | null;
+}
+
+export interface DashboardStats {
+  users: Record<Role, number>;
+  totalSantri: number;
+  totalKelas: number;
+  totalMateri: number;
+  totalSetoran: number;
+  setoranHariIni: number;
+  setoranBelumDiverifikasi: number;
+}
