@@ -76,7 +76,12 @@ async function resolveSantriIds(
       where: { kelasId: opts.kelasId },
       select: { id: true },
     });
-    return santri.map((s) => s.id);
+    let ids = santri.map((s) => s.id);
+    if (user.role === Role.ORANG_TUA) {
+      const accessible = await getAccessibleSantriIds(user);
+      ids = ids.filter((id) => accessible?.includes(id) ?? false);
+    }
+    return ids;
   }
 
   return getAccessibleSantriIds(user);
