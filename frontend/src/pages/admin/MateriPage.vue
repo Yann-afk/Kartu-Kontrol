@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ion-page>
     <ion-header>
       <ion-toolbar>
@@ -16,18 +16,18 @@
       <div class="mx-auto max-w-3xl">
         <p
           v-if="admin.error"
-          class="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600"
+          class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
         >
           {{ admin.error }}
         </p>
 
-        <div v-if="admin.loading && admin.materiList.length === 0" class="mt-3 space-y-3">
-          <div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-xl bg-slate-200" />
+        <div v-if="loading && admin.materiList.length === 0" class="mt-3 space-y-3">
+          <div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
         <div v-else-if="admin.materiList.length === 0" class="mt-3">
-          <div class="rounded-xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
-            Belum ada materi.
+          <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
+            Belum ada materi. Tambahkan lewat tombol "Tambah".
           </div>
         </div>
 
@@ -35,16 +35,17 @@
           <div
             v-for="materi in admin.materiList"
             :key="materi.id"
-            class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
           >
+            <InitialsAvatar :name="materi.namaSurah" color="amber" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(materi)">
               <p class="truncate font-semibold text-slate-800">{{ materi.namaSurah }}</p>
               <p class="mt-0.5 text-sm text-slate-500">
-                Juz {{ materi.juz }} · {{ materi.totalAyat }} ayat
+                Juz {{ materi.juz }} Â· {{ materi.totalAyat }} ayat
               </p>
             </button>
             <ion-button fill="clear" size="small" color="danger" @click="confirmDelete(materi)">
-              Hapus
+              <ion-icon slot="icon-only" :icon="trashOutline" />
             </ion-button>
           </div>
         </div>
@@ -63,8 +64,8 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <div class="mx-auto max-w-md">
-          <p v-if="admin.error" class="mb-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+        <div class="mx-auto max-w-md space-y-4">
+          <p v-if="admin.error" class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">
             {{ admin.error }}
           </p>
 
@@ -73,7 +74,7 @@
             <input v-model="form.namaSurah" class="field-input" placeholder="cth: Al-Baqarah" />
           </div>
 
-          <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="field-label">Juz</label>
               <input v-model.number="form.juz" type="number" min="1" max="30" class="field-input" />
@@ -87,7 +88,6 @@
           <ion-button
             expand="block"
             shape="round"
-            class="mt-5"
             :disabled="admin.submitting"
             @click="submit"
           >
@@ -101,13 +101,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonModal,
   IonPage,
   IonSpinner,
@@ -116,10 +117,14 @@ import {
   alertController,
   toastController,
 } from "@ionic/vue";
+import { trashOutline } from "ionicons/icons";
+import InitialsAvatar from "@/components/InitialsAvatar.vue";
 import { useAdminStore } from "@/stores/admin";
 import type { Materi } from "@/types";
 
 const admin = useAdminStore();
+
+const loading = computed(() => admin.loading && admin.materiList.length === 0);
 
 const showForm = ref(false);
 const editing = ref<Materi | null>(null);

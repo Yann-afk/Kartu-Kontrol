@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ion-page>
     <ion-header>
       <ion-toolbar>
@@ -16,18 +16,18 @@
       <div class="mx-auto max-w-3xl">
         <p
           v-if="admin.error"
-          class="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600"
+          class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
         >
           {{ admin.error }}
         </p>
 
-        <div v-if="admin.loading && admin.santriList.length === 0" class="mt-3 space-y-3">
-          <div v-for="i in 4" :key="i" class="h-20 animate-pulse rounded-xl bg-slate-200" />
+        <div v-if="loading && admin.santriList.length === 0" class="mt-3 space-y-3">
+          <div v-for="i in 4" :key="i" class="h-20 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
         <div v-else-if="admin.santriList.length === 0" class="mt-3">
-          <div class="rounded-xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
-            Belum ada santri.
+          <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
+            Belum ada santri. Tambahkan lewat tombol "Tambah".
           </div>
         </div>
 
@@ -35,23 +35,24 @@
           <div
             v-for="santri in admin.santriList"
             :key="santri.id"
-            class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
           >
+            <InitialsAvatar :name="santri.namaLengkap" color="emerald" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(santri)">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <p class="truncate font-semibold text-slate-800">{{ santri.namaLengkap }}</p>
                 <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
                   NIS {{ santri.nis }}
                 </span>
               </div>
-              <p class="mt-0.5 text-sm text-slate-500">
-                {{ santri.kelas?.namaKelas ?? "Tanpa kelas" }}
-                <span class="text-slate-300">·</span>
+              <p class="mt-0.5 truncate text-sm text-slate-500">
+                <span class="font-medium text-slate-600">{{ santri.kelas?.namaKelas ?? "Tanpa kelas" }}</span>
+                <span class="text-slate-300"> Â· </span>
                 Wali: {{ santri.orangTua?.namaLengkap ?? "Belum ada" }}
               </p>
             </button>
             <ion-button fill="clear" size="small" color="danger" @click="confirmDelete(santri)">
-              Hapus
+              <ion-icon slot="icon-only" :icon="trashOutline" />
             </ion-button>
           </div>
         </div>
@@ -70,8 +71,8 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <div class="mx-auto max-w-md">
-          <p v-if="admin.error" class="mb-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+        <div class="mx-auto max-w-md space-y-4">
+          <p v-if="admin.error" class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">
             {{ admin.error }}
           </p>
 
@@ -80,14 +81,14 @@
             <input v-model="form.nis" class="field-input" placeholder="Nomor induk santri" />
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Nama Lengkap</label>
             <input v-model="form.namaLengkap" class="field-input" placeholder="Nama santri" />
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Orang Tua / Wali</label>
-            <select v-model="form.orangTuaId" class="field-input">
+            <select v-model="form.orangTuaId" class="field-select">
               <option
                 v-for="o in admin.orangTuaOptions"
                 :key="o.id"
@@ -96,25 +97,26 @@
                 {{ o.namaLengkap ?? o.email }}
               </option>
             </select>
+            <p v-if="admin.orangTuaOptions.length === 0" class="mt-1 text-xs font-medium text-red-500">
+              Belum ada akun Orang Tua. Buat dulu di Manajemen User.
+            </p>
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Kelas</label>
-            <select v-model="form.kelasId" class="field-input">
-              <option
-                v-for="k in admin.kelasList"
-                :key="k.id"
-                :value="k.id"
-              >
+            <select v-model="form.kelasId" class="field-select">
+              <option v-for="k in admin.kelasList" :key="k.id" :value="k.id">
                 {{ k.namaKelas }}
               </option>
             </select>
+            <p v-if="admin.kelasList.length === 0" class="mt-1 text-xs font-medium text-red-500">
+              Belum ada kelas. Buat dulu di Manajemen Kelas.
+            </p>
           </div>
 
           <ion-button
             expand="block"
             shape="round"
-            class="mt-5"
             :disabled="admin.submitting"
             @click="submit"
           >
@@ -128,13 +130,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonModal,
   IonPage,
   IonSpinner,
@@ -143,10 +146,14 @@ import {
   alertController,
   toastController,
 } from "@ionic/vue";
+import { trashOutline } from "ionicons/icons";
+import InitialsAvatar from "@/components/InitialsAvatar.vue";
 import { useAdminStore } from "@/stores/admin";
 import type { Santri } from "@/types";
 
 const admin = useAdminStore();
+
+const loading = computed(() => admin.loading && admin.santriList.length === 0);
 
 const showForm = ref(false);
 const editing = ref<Santri | null>(null);

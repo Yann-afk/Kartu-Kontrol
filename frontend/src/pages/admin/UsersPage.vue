@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ion-page>
     <ion-header>
       <ion-toolbar>
@@ -16,17 +16,17 @@
       <div class="mx-auto max-w-3xl">
         <p
           v-if="admin.error"
-          class="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600"
+          class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
         >
           {{ admin.error }}
         </p>
 
-        <div v-if="admin.loading && admin.users.length === 0" class="mt-3 space-y-3">
-          <div v-for="i in 4" :key="i" class="h-20 animate-pulse rounded-xl bg-slate-200" />
+        <div v-if="loading && admin.users.length === 0" class="mt-3 space-y-3">
+          <div v-for="i in 4" :key="i" class="h-20 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
         <div v-else-if="admin.users.length === 0" class="mt-3">
-          <div class="rounded-xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
+          <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
             Belum ada akun pengguna.
           </div>
         </div>
@@ -35,10 +35,14 @@
           <div
             v-for="user in admin.users"
             :key="user.id"
-            class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
           >
+            <InitialsAvatar
+              :name="user.namaLengkap ?? user.email"
+              :color="avatarColor(user.role)"
+            />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(user)">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <p class="truncate font-semibold text-slate-800">
                   {{ user.namaLengkap ?? user.email }}
                 </p>
@@ -55,7 +59,7 @@
                   Anda
                 </span>
               </div>
-              <p class="mt-0.5 text-sm text-slate-500">{{ user.email }}</p>
+              <p class="mt-0.5 truncate text-sm text-slate-500">{{ user.email }}</p>
             </button>
             <ion-button
               v-if="auth.user?.id !== user.id"
@@ -64,7 +68,7 @@
               color="danger"
               @click="confirmDelete(user)"
             >
-              Hapus
+              <ion-icon slot="icon-only" :icon="trashOutline" />
             </ion-button>
           </div>
         </div>
@@ -83,31 +87,31 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <div class="mx-auto max-w-md">
-          <p v-if="admin.error" class="mb-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+        <div class="mx-auto max-w-md space-y-4">
+          <p v-if="admin.error" class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">
             {{ admin.error }}
           </p>
 
           <div>
             <label class="field-label">Peran Akun</label>
-            <select v-model="form.role" class="field-input" :disabled="!!editing">
+            <select v-model="form.role" class="field-select" :disabled="!!editing">
               <option value="ADMIN">Admin</option>
               <option value="PENGAJAR">Pengajar</option>
               <option value="ORANG_TUA">Orang Tua</option>
             </select>
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Nama Lengkap</label>
             <input v-model="form.namaLengkap" class="field-input" placeholder="Nama lengkap akun" />
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Email</label>
             <input v-model="form.email" type="email" class="field-input" placeholder="nama@contoh.id" />
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">
               Password
               <span v-if="editing" class="font-normal text-slate-400">(kosongkan jika tidak diganti)</span>
@@ -116,21 +120,21 @@
           </div>
 
           <template v-if="form.role === 'PENGAJAR'">
-            <div class="mt-3">
+            <div>
               <label class="field-label">NIP (opsional)</label>
               <input v-model="form.nip" class="field-input" placeholder="Nomor induk pengajar" />
             </div>
           </template>
 
           <template v-if="form.role === 'PENGAJAR' || form.role === 'ORANG_TUA'">
-            <div class="mt-3">
+            <div>
               <label class="field-label">No. HP</label>
               <input v-model="form.noHp" class="field-input" placeholder="08xxxxxxxxxx" />
             </div>
           </template>
 
           <template v-if="form.role === 'ORANG_TUA'">
-            <div class="mt-3">
+            <div>
               <label class="field-label">Alamat</label>
               <textarea v-model="form.alamat" rows="2" class="field-input" placeholder="Alamat wali santri" />
             </div>
@@ -139,7 +143,6 @@
           <ion-button
             expand="block"
             shape="round"
-            class="mt-5"
             :disabled="admin.submitting"
             @click="submit"
           >
@@ -153,13 +156,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonModal,
   IonPage,
   IonSpinner,
@@ -168,12 +172,16 @@ import {
   alertController,
   toastController,
 } from "@ionic/vue";
+import { trashOutline } from "ionicons/icons";
+import InitialsAvatar from "@/components/InitialsAvatar.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useAdminStore } from "@/stores/admin";
 import type { AdminUser, Role } from "@/types";
 
 const auth = useAuthStore();
 const admin = useAdminStore();
+
+const loading = computed(() => admin.loading && admin.users.length === 0);
 
 const showForm = ref(false);
 const editing = ref<AdminUser | null>(null);
@@ -199,12 +207,22 @@ const roleBadges: Record<Role, string> = {
   ORANG_TUA: "bg-emerald-100 text-emerald-700",
 };
 
+const avatarColors: Record<Role, "violet" | "indigo" | "emerald"> = {
+  ADMIN: "violet",
+  PENGAJAR: "indigo",
+  ORANG_TUA: "emerald",
+};
+
 function roleLabel(role: Role): string {
   return roleLabels[role];
 }
 
 function roleBadge(role: Role): string {
   return roleBadges[role];
+}
+
+function avatarColor(role: Role): "violet" | "indigo" | "emerald" {
+  return avatarColors[role];
 }
 
 function resetForm(): void {
@@ -261,10 +279,10 @@ function validate(): string | null {
   if (!form.email.trim() || !form.email.includes("@")) {
     return "Email wajib diisi dengan format valid";
   }
-  if (!editing.value && form.password.length < 6) {
+  if (form.password && form.password.length < 6) {
     return "Password minimal 6 karakter";
   }
-  if (editing.value && form.password && form.password.length < 6) {
+  if (!editing.value && form.password.length < 6) {
     return "Password minimal 6 karakter";
   }
   return null;

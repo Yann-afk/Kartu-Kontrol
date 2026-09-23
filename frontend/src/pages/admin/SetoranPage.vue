@@ -11,7 +11,7 @@
 
     <ion-content class="ion-padding">
       <div class="mx-auto max-w-3xl">
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="mt-1 flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-100">
           <button
             v-for="f in sumberFilters"
             :key="f.value || 'all'"
@@ -22,7 +22,7 @@
           >
             {{ f.label }}
           </button>
-          <span class="mx-2 h-5 w-px bg-slate-200" />
+          <span class="mx-1 h-5 w-px bg-slate-200" />
           <button
             v-for="f in jenisFilters"
             :key="f.value || 'all'"
@@ -35,7 +35,7 @@
           </button>
         </div>
 
-        <p class="mt-4 text-sm font-medium text-slate-500">
+        <p class="mt-4 text-sm font-semibold text-slate-600">
           {{ admin.feedMeta.total }} setoran
         </p>
 
@@ -64,8 +64,8 @@
             :kartu="kartu"
           >
             <template #actions>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="text-xs text-slate-400">
+              <div class="mt-3 flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1.5">
+                <span class="truncate text-xs text-slate-400">
                   {{ kartu.disimakOleh.email }}
                 </span>
                 <ion-button

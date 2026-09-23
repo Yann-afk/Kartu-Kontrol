@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ion-page>
     <ion-header>
       <ion-toolbar>
@@ -16,18 +16,18 @@
       <div class="mx-auto max-w-3xl">
         <p
           v-if="admin.error"
-          class="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600"
+          class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
         >
           {{ admin.error }}
         </p>
 
-        <div v-if="admin.loading && admin.kelasList.length === 0" class="mt-3 space-y-3">
-          <div v-for="i in 3" :key="i" class="h-20 animate-pulse rounded-xl bg-slate-200" />
+        <div v-if="loading && admin.kelasList.length === 0" class="mt-3 space-y-3">
+          <div v-for="i in 3" :key="i" class="h-20 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
         <div v-else-if="admin.kelasList.length === 0" class="mt-3">
-          <div class="rounded-xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
-            Belum ada kelas.
+          <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
+            Belum ada kelas. Tambahkan lewat tombol "Tambah".
           </div>
         </div>
 
@@ -35,18 +35,19 @@
           <div
             v-for="kelas in admin.kelasList"
             :key="kelas.id"
-            class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
           >
+            <InitialsAvatar :name="kelas.namaKelas" color="violet" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(kelas)">
               <p class="truncate font-semibold text-slate-800">{{ kelas.namaKelas }}</p>
-              <p class="mt-0.5 text-sm text-slate-500">
-                {{ kelas.pengajar?.namaLengkap ?? "Belum ada pengajar" }}
-                <span class="text-slate-300">·</span>
+              <p class="mt-0.5 truncate text-sm text-slate-500">
+                <span class="font-medium text-slate-600">{{ kelas.pengajar?.namaLengkap ?? "Belum ada pengajar" }}</span>
+                <span class="text-slate-300"> Â· </span>
                 {{ kelas._count?.santri ?? 0 }} santri
               </p>
             </button>
             <ion-button fill="clear" size="small" color="danger" @click="confirmDelete(kelas.id, kelas.namaKelas)">
-              Hapus
+              <ion-icon slot="icon-only" :icon="trashOutline" />
             </ion-button>
           </div>
         </div>
@@ -65,8 +66,8 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <div class="mx-auto max-w-md">
-          <p v-if="admin.error" class="mb-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+        <div class="mx-auto max-w-md space-y-4">
+          <p v-if="admin.error" class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">
             {{ admin.error }}
           </p>
 
@@ -75,9 +76,9 @@
             <input v-model="form.namaKelas" class="field-input" placeholder="cth: Halaqoh 1 / Kelas Tahfidz A" />
           </div>
 
-          <div class="mt-3">
+          <div>
             <label class="field-label">Pengajar</label>
-            <select v-model="form.pengajarId" class="field-input">
+            <select v-model="form.pengajarId" class="field-select">
               <option
                 v-for="p in admin.pengajarOptions"
                 :key="p.id"
@@ -86,12 +87,14 @@
                 {{ p.namaLengkap ?? p.email }}
               </option>
             </select>
+            <p v-if="admin.pengajarOptions.length === 0" class="mt-1 text-xs font-medium text-red-500">
+              Belum ada akun Pengajar. Buat dulu di Manajemen User.
+            </p>
           </div>
 
           <ion-button
             expand="block"
             shape="round"
-            class="mt-5"
             :disabled="admin.submitting"
             @click="submit"
           >
@@ -105,13 +108,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonModal,
   IonPage,
   IonSpinner,
@@ -120,10 +124,14 @@ import {
   alertController,
   toastController,
 } from "@ionic/vue";
+import { trashOutline } from "ionicons/icons";
+import InitialsAvatar from "@/components/InitialsAvatar.vue";
 import { useAdminStore } from "@/stores/admin";
 import type { Kelas } from "@/types";
 
 const admin = useAdminStore();
+
+const loading = computed(() => admin.loading && admin.kelasList.length === 0);
 
 const showForm = ref(false);
 const editing = ref<Kelas | null>(null);
