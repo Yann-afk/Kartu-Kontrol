@@ -52,6 +52,45 @@
           </div>
         </div>
 
+        <div class="mt-6 flex flex-wrap gap-2">
+          <ion-button
+            shape="round"
+            size="small"
+            fill="outline"
+            color="secondary"
+            @click="router.push('/rekap')"
+          >
+            Rekap
+          </ion-button>
+          <ion-button
+            shape="round"
+            size="small"
+            fill="outline"
+            color="tertiary"
+            @click="router.push('/statistik')"
+          >
+            Statistik
+          </ion-button>
+          <ion-button
+            shape="round"
+            size="small"
+            fill="outline"
+            color="success"
+            @click="router.push('/pesan')"
+          >
+            Pesan Ortu
+          </ion-button>
+          <ion-button
+            shape="round"
+            size="small"
+            fill="outline"
+            color="medium"
+            @click="router.push('/profil')"
+          >
+            Profil
+          </ion-button>
+        </div>
+
         <div class="mt-8 flex items-center justify-between">
           <h2 class="text-lg font-bold text-slate-800">Kelas (Halaqoh)</h2>
           <ion-button

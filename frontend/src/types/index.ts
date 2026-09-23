@@ -159,3 +159,61 @@ export interface DashboardStats {
   setoranHariIni: number;
   setoranBelumDiverifikasi: number;
 }
+
+export interface UpdateProfilPayload {
+  namaLengkap?: string;
+  noHp?: string | null;
+  nip?: string | null;
+  alamat?: string | null;
+}
+
+export interface Pesan {
+  id: string;
+  santriId: string;
+  senderUserId: string;
+  isi: string;
+  createdAt: string;
+  sender?: {
+    id: string;
+    role: Role;
+    pengajar?: { namaLengkap: string } | null;
+    orangTua?: { namaLengkap: string } | null;
+  };
+}
+
+export interface RekapPerSantri {
+  santriId: string;
+  nis: string | null;
+  namaLengkap: string | null;
+  kelas: string | null;
+  total: number;
+  totalAyat: number;
+}
+
+export interface RekapData {
+  periode: { tanggalAwal: string | null; tanggalAkhir: string | null };
+  totals: {
+    total: number;
+    totalSekolah: number;
+    totalRumah: number;
+    totalZiyadah: number;
+    totalMurojaah: number;
+    totalAyat: number;
+    santriCount: number;
+  };
+  nilai: { nilai: string | null; total: number }[];
+  perSantri: RekapPerSantri[];
+  items: KartuKontrol[];
+  page: number;
+  limit: number;
+}
+
+export interface StatistikData {
+  perBulan: { bulan: string; total: number }[];
+  perHari: { tgl: string; total: number }[];
+  perSumber: { sumberInput: SumberInput; _count: { _all: number } }[];
+  perJenis: { jenisSetoran: JenisSetoran; _count: { _all: number } }[];
+  perNilai: { nilai: string | null; _count: { _all: number } }[];
+  totalAyat: number;
+  perSantri: RekapPerSantri[];
+}

@@ -99,6 +99,51 @@
           </div>
         </section>
 
+        <section
+          v-if="laporan.statistik?.perBulan?.length"
+          class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100"
+        >
+          <h3 class="text-base font-bold text-slate-800">
+            Tren Setoran per Bulan
+          </h3>
+          <div class="mt-4 flex h-32 items-end gap-2">
+            <div
+              v-for="b in laporan.statistik.perBulan"
+              :key="b.bulan"
+              class="flex min-w-0 flex-1 flex-col items-center gap-1"
+            >
+              <span class="text-xs font-semibold text-indigo-600">
+                {{ b.total }}
+              </span>
+              <div
+                class="w-full rounded-t-lg bg-gradient-to-t from-indigo-500 to-violet-500"
+                :style="{ height: tinggiBar(b.total) + 'px' }"
+              />
+              <span class="text-[10px] text-slate-400">
+                {{ labelBulan(b.bulan) }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section
+          v-if="laporan.statistik?.perNilai?.length"
+          class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100"
+        >
+          <h3 class="text-base font-bold text-slate-800">
+            Sebaran Nilai
+          </h3>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span
+              v-for="n in laporan.statistik.perNilai"
+              :key="n.nilai ?? 'kosong'"
+              class="rounded-full bg-violet-50 px-3 py-1 text-sm font-medium text-violet-700 ring-1 ring-violet-100"
+            >
+              {{ n.nilai ?? "Belum dinilai" }} · {{ n._count._all }}
+            </span>
+          </div>
+        </section>
+
         <p
           v-if="hafalan.feed.length === 0"
           class="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center text-sm text-slate-400"
@@ -111,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import {
   IonBackButton,
   IonContent,
@@ -123,8 +168,10 @@ import {
   IonButtons,
 } from "@ionic/vue";
 import { useHafalanStore } from "@/stores/hafalan";
+import { useLaporanStore } from "@/stores/laporan";
 
 const hafalan = useHafalanStore();
+const laporan = useLaporanStore();
 
 const anakAktif = computed(() => hafalan.anakAktif);
 
@@ -186,4 +233,28 @@ onMounted(() => {
     void hafalan.fetchFeed(1);
   }
 });
+
+watch(
+  () => hafalan.anakAktif?.id,
+  (id) => {
+    if (id) {
+      void laporan.fetchStatistik({ santriId: id });
+    }
+  },
+  { immediate: true }
+);
+
+function tinggiBar(total: number): number {
+  const maks = Math.max(1, ...(laporan.statistik?.perBulan ?? []).map((b) => b.total));
+  return Math.max(4, Math.round((total / maks) * 96));
+}
+
+function labelBulan(bulan: string): string {
+  const [tahun, bulanAngka] = bulan.split("-");
+  const nama = new Date(Number(tahun), Number(bulanAngka) - 1, 1).toLocaleDateString(
+    "id-ID",
+    { month: "short" }
+  );
+  return tahun === String(new Date().getFullYear()) ? nama : `${nama} ${tahun.slice(2)}`;
+}
 </script>

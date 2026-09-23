@@ -99,6 +99,21 @@
                 Setoran
               </ion-button>
             </div>
+
+            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <ion-button shape="round" size="small" fill="outline" color="secondary" @click="router.push('/rekap')">
+                Rekap
+              </ion-button>
+              <ion-button shape="round" size="small" fill="outline" color="tertiary" @click="router.push('/statistik')">
+                Statistik
+              </ion-button>
+              <ion-button shape="round" size="small" fill="outline" color="success" @click="router.push('/pesan')">
+                Pesan Guru
+              </ion-button>
+              <ion-button shape="round" size="small" fill="outline" color="medium" @click="router.push('/profil')">
+                Profil
+              </ion-button>
+            </div>
           </div>
 
           <div class="mt-8">

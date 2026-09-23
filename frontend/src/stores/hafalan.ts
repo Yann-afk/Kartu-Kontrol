@@ -11,6 +11,7 @@ import type {
   KartuKontrol,
   Kelas,
   Materi,
+  Pesan,
   Santri,
   SumberInput,
 } from "@/types";
@@ -35,6 +36,11 @@ export const useHafalanStore = defineStore("hafalan", () => {
   const loadingMore = ref(false);
   const submitting = ref(false);
   const error = ref<string | null>(null);
+
+  const pesanList = ref<Pesan[]>([]);
+  const pesanLoading = ref(false);
+  const pesanSubmitting = ref(false);
+  const pesanError = ref<string | null>(null);
 
   const hasMore = computed(
     () => feedMeta.value.page * feedMeta.value.limit < feedMeta.value.total
@@ -215,6 +221,34 @@ export const useHafalanStore = defineStore("hafalan", () => {
     void fetchFeed(1);
   }
 
+  async function fetchPesan(santriId: string): Promise<void> {
+    pesanLoading.value = true;
+    pesanError.value = null;
+    try {
+      const res = await api.get("/pesan", { params: { santriId } });
+      pesanList.value = (res.data.data as { items: Pesan[] }).items;
+    } catch (err) {
+      pesanError.value = extractError(err);
+    } finally {
+      pesanLoading.value = false;
+    }
+  }
+
+  async function kirimPesan(santriId: string, isi: string): Promise<boolean> {
+    pesanSubmitting.value = true;
+    pesanError.value = null;
+    try {
+      const res = await api.post("/pesan", { santriId, isi });
+      pesanList.value.push(res.data.data as Pesan);
+      return true;
+    } catch (err) {
+      pesanError.value = extractError(err);
+      return false;
+    } finally {
+      pesanSubmitting.value = false;
+    }
+  }
+
   function reset(): void {
     anakList.value = [];
     anakAktif.value = null;
@@ -246,6 +280,10 @@ export const useHafalanStore = defineStore("hafalan", () => {
     loadingMore,
     submitting,
     error,
+    pesanList,
+    pesanLoading,
+    pesanSubmitting,
+    pesanError,
     hasMore,
     feedSekolahCount,
     feedRumahCount,
@@ -263,6 +301,8 @@ export const useHafalanStore = defineStore("hafalan", () => {
     setJenisFilter,
     setKelasFilter,
     setSantriFilter,
+    fetchPesan,
+    kirimPesan,
     reset,
   };
 });

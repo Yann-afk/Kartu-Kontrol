@@ -18,6 +18,10 @@ import KelasPage from "@/pages/admin/KelasPage.vue";
 import SantriPage from "@/pages/admin/SantriPage.vue";
 import MateriPage from "@/pages/admin/MateriPage.vue";
 import SetoranPage from "@/pages/admin/SetoranPage.vue";
+import ProfilPage from "@/pages/ProfilPage.vue";
+import RekapPage from "@/pages/RekapPage.vue";
+import StatistikPage from "@/pages/StatistikPage.vue";
+import PesanPage from "@/pages/PesanPage.vue";
 
 interface AppRouteMeta {
   requiresAuth?: boolean;
@@ -61,6 +65,30 @@ const routes: RouteRecordRaw[] = [
     name: "grafik-perkembangan",
     component: GrafikPerkembanganPage,
     meta: { requiresAuth: true, roles: ["ORANG_TUA"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/profil",
+    name: "profil",
+    component: ProfilPage,
+    meta: { requiresAuth: true, roles: ["PENGAJAR", "ORANG_TUA"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/rekap",
+    name: "rekap",
+    component: RekapPage,
+    meta: { requiresAuth: true, roles: ["PENGAJAR", "ORANG_TUA"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/statistik",
+    name: "statistik",
+    component: StatistikPage,
+    meta: { requiresAuth: true, roles: ["PENGAJAR", "ORANG_TUA"] } satisfies AppRouteMeta,
+  },
+  {
+    path: "/pesan",
+    name: "pesan",
+    component: PesanPage,
+    meta: { requiresAuth: true, roles: ["PENGAJAR", "ORANG_TUA"] } satisfies AppRouteMeta,
   },
   {
     path: "/admin",

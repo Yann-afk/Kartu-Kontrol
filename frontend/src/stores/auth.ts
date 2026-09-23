@@ -4,7 +4,7 @@ import api from "@/api/axios";
 import { TOKEN_KEY, USER_KEY, ANAK_AKTIF_KEY } from "@/constants/storage";
 import { extractError } from "@/utils/error";
 import { bindPushToAccount, unregisterPush } from "@/plugins/push";
-import type { MeResponse, Role, User } from "@/types";
+import type { MeResponse, Role, UpdateProfilPayload, User } from "@/types";
 
 function parseUser(): User | null {
   const raw = localStorage.getItem(USER_KEY);
@@ -81,6 +81,20 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function updateProfil(
+    payload: UpdateProfilPayload
+  ): Promise<MeResponse | null> {
+    error.value = null;
+    try {
+      const res = await api.patch("/auth/me", payload);
+      profile.value = res.data.data as MeResponse;
+      return profile.value;
+    } catch (err) {
+      error.value = extractError(err);
+      return null;
+    }
+  }
+
   function logout(): void {
     void unregisterPush(token.value ?? undefined);
     token.value = null;
@@ -107,6 +121,7 @@ export const useAuthStore = defineStore("auth", () => {
     berandaPath,
     login,
     fetchMe,
+    updateProfil,
     logout,
   };
 });
