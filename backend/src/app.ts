@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import helmet from "helmet";
 import { routes } from "./routes";
@@ -29,6 +30,13 @@ app.get("/", (_req, res) => {
 
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "HafalTrack API aktif" });
+});
+
+app.get("/api/download/apk", (_req, res) => {
+  res.download(
+    path.join(__dirname, "../public/app.apk"),
+    "hafaltrack-v1.0.apk"
+  );
 });
 
 app.use("/api", routes);
