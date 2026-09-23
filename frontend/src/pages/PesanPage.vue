@@ -127,6 +127,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { toastGagal } from "@/utils/toast";
 import {
   IonBackButton,
@@ -147,6 +148,7 @@ import type { Pesan } from "@/types";
 
 const auth = useAuthStore();
 const hafalan = useHafalanStore();
+const route = useRoute();
 
 const santriId = ref("");
 const isi = ref("");
@@ -215,6 +217,12 @@ async function kirim(): Promise<void> {
 }
 
 onMounted(() => {
+  const qsantri =
+    typeof route.query.santriId === "string" ? route.query.santriId : "";
+  if (qsantri && options.value.some((s) => s.id === qsantri)) {
+    santriId.value = qsantri;
+    void muatPesan();
+  }
   void hafalan.fetchSantri().catch(() => undefined);
   if (auth.isOrangTua && hafalan.anakList.length === 0) {
     void hafalan.fetchAnak().catch(() => undefined);

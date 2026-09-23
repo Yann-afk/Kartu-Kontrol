@@ -143,6 +143,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import {
   IonBackButton,
   IonButtons,
@@ -163,8 +164,10 @@ import type { SumberInput } from "@/types";
 const auth = useAuthStore();
 const hafalan = useHafalanStore();
 const laporan = useLaporanStore();
+const route = useRoute();
 
 const kelasId = ref("");
+const santriIdRef = ref("");
 
 const scopeLabel = computed(() => {
   if (auth.isPengajar) {
@@ -172,7 +175,8 @@ const scopeLabel = computed(() => {
       ? hafalan.kelasList.find((k) => k.id === kelasId.value)?.namaKelas ?? ""
       : "Semua kelas";
   }
-  return hafalan.anakAktif?.namaLengkap ?? "Semua anak";
+  const id = santriIdRef.value || hafalan.anakAktif?.id || "";
+  return hafalan.anakList.find((a) => a.id === id)?.namaLengkap ?? "Semua anak";
 });
 
 const totalSumber = computed(() =>
@@ -190,11 +194,10 @@ async function muat(): Promise<void> {
   if (auth.isPengajar && hafalan.kelasList.length === 0) {
     await hafalan.fetchKelas();
   }
+  const ortuId = santriIdRef.value || hafalan.anakAktif?.id;
   await laporan.fetchStatistik({
     ...(auth.isPengajar ? { kelasId: kelasId.value || undefined } : {}),
-    ...(auth.isOrangTua && hafalan.anakAktif
-      ? { santriId: hafalan.anakAktif.id }
-      : {}),
+    ...(auth.isOrangTua && ortuId ? { santriId: ortuId } : {}),
   });
 }
 
@@ -213,8 +216,17 @@ function labelBulan(bulan: string): string {
 }
 
 onMounted(() => {
-  if (auth.isOrangTua && !hafalan.anakAktif) {
-    void hafalan.fetchAnak().then(() => void muat());
+  const qsantri =
+    typeof route.query.santriId === "string" ? route.query.santriId : "";
+  if (auth.isOrangTua) {
+    if (qsantri) {
+      santriIdRef.value = qsantri;
+      void muat();
+    } else if (!hafalan.anakAktif) {
+      void hafalan.fetchAnak().then(() => void muat());
+    } else {
+      void muat();
+    }
   } else {
     void muat();
   }

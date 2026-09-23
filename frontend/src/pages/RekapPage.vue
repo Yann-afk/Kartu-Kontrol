@@ -161,6 +161,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { Capacitor } from "@capacitor/core";
 import { toastGagal, toastSukses } from "@/utils/toast";
 import {
@@ -183,6 +184,7 @@ import { useLaporanStore } from "@/stores/laporan";
 const auth = useAuthStore();
 const hafalan = useHafalanStore();
 const laporan = useLaporanStore();
+const route = useRoute();
 
 const periode = ref("30");
 const kelasId = ref("");
@@ -292,6 +294,10 @@ async function salin(teks: string): Promise<void> {
 }
 
 onMounted(() => {
+  const qsantri = typeof route.query.santriId === "string" ? route.query.santriId : "";
+  if (qsantri) {
+    santriId.value = qsantri;
+  }
   void muat();
 });
 </script>

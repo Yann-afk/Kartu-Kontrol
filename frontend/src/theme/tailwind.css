@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ion-color-primary: #6366f1;
+  --ion-color-primary-shade: #5558e8;
+  --ion-color-primary-tint: #7b7ef5;
+  --ion-background-color: #f4f5fa;
+  --ion-text-color: #0f172a;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+ion-content {
+  --background: transparent;
+}
+
+ion-toolbar {
+  --border-width: 0 !important;
+  --background: transparent;
+}
+
+ion-title {
+  font-weight: 800;
+}
+
+ion-button {
+  --border-radius: 999px;
+  --box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-back-button {
+  --icon-font-size: 22px;
+  --color: #4f46e5;
+}
+
+ion-modal {
+  --border-radius: 1.25rem;
+}
+
+ion-fab-button {
+  --background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --background-activated: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+  --box-shadow: 0 12px 28px -6px rgb(168 85 247 / 0.55);
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800;
+  }
+}
+
 @layer components {
   .badge-sekolah {
     @apply inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-emerald-700;
@@ -40,11 +96,11 @@
   }
 
   .field-input {
-    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100;
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100;
   }
 
   .field-select {
-    @apply w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-9 text-sm text-slate-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100;
+    @apply w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-9 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-position: right 0.75rem center;
     background-repeat: no-repeat;
@@ -53,14 +109,24 @@
   .field-error {
     @apply mt-1 text-xs font-medium text-red-500;
   }
-}
 
-ion-modal {
-  --border-radius: 1.25rem;
-}
+  .card {
+    @apply rounded-2xl bg-white shadow-sm ring-1 ring-slate-100;
+  }
 
-ion-fab-button {
-  --background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-  --background-activated: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
-  --box-shadow: 0 12px 28px -6px rgb(168 85 247 / 0.55);
+  .empty-state {
+    @apply flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-6 py-10 text-center;
+  }
+
+  .quick-tile {
+    @apply flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-300 hover:shadow-md active:scale-95;
+  }
+
+  .tile-icon {
+    @apply flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md;
+  }
+
+  .stat-tile {
+    @apply rounded-xl bg-white p-3 text-center shadow-sm ring-1 ring-slate-100;
+  }
 }
