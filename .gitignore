@@ -8,3 +8,4 @@ build/
 coverage/
 www/
 .vite/
+frontend/android/app/google-services.json

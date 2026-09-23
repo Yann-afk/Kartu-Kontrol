@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import api from "@/api/axios";
 import { TOKEN_KEY, USER_KEY, ANAK_AKTIF_KEY } from "@/constants/storage";
 import { extractError } from "@/utils/error";
+import { bindPushToAccount, unregisterPush } from "@/plugins/push";
 import type { MeResponse, Role, User } from "@/types";
 
 function parseUser(): User | null {
@@ -62,6 +63,9 @@ export const useAuthStore = defineStore("auth", () => {
       return null;
     } finally {
       loading.value = false;
+      if (isAuthenticated.value) {
+        void bindPushToAccount();
+      }
     }
   }
 
@@ -78,6 +82,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function logout(): void {
+    void unregisterPush(token.value ?? undefined);
     token.value = null;
     user.value = null;
     profile.value = null;

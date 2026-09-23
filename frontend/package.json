@@ -15,6 +15,7 @@
     "@capacitor/android": "^8.5.2",
     "@capacitor/cli": "^8.5.2",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/push-notifications": "^8.1.2",
     "@ionic/vue": "^8.8.19",
     "@ionic/vue-router": "^8.8.19",
     "axios": "^1.7.7",

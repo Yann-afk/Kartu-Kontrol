@@ -46,6 +46,7 @@ import { IonApp, IonIcon, IonRouterOutlet } from "@ionic/vue";
 import { close, downloadOutline } from "ionicons/icons";
 import { useAuthStore } from "@/stores/auth";
 import { useUpdateStore } from "@/stores/update";
+import { initPush } from "@/plugins/push";
 
 const auth = useAuthStore();
 const update = useUpdateStore();
@@ -55,5 +56,6 @@ onMounted(() => {
     void auth.fetchMe();
   }
   void update.checkVersion();
+  void initPush();
 });
 </script>

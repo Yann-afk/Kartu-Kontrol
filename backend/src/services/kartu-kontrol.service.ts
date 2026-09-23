@@ -2,6 +2,7 @@ import { JenisSetoran, Prisma, Role, SumberInput } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/api-error";
 import { AuthUser } from "../types/express";
+import { sendPushToUsers } from "../utils/fcm";
 
 const NILAI_VALID = ["A", "B", "C", "D", "Belum Lulus"];
 
@@ -119,6 +120,126 @@ export async function assertSantriAccess(user: AuthUser, santriId: string) {
   return santri;
 }
 
+async function getAdminUserIds(): Promise<string[]> {
+  const admins = await prisma.user.findMany({
+    where: { role: Role.ADMIN },
+    select: { id: true },
+  });
+  return admins.map((a) => a.id);
+}
+
+async function getOrtuUserId(santriId: string): Promise<string | null> {
+  const santri = await prisma.santri.findUnique({
+    where: { id: santriId },
+    select: { orangTua: { select: { userId: true } } },
+  });
+  return santri?.orangTua?.userId ?? null;
+}
+
+async function getPengajarUserIdByKelas(
+  kelasId: string
+): Promise<string | null> {
+  const kelas = await prisma.kelas.findUnique({
+    where: { id: kelasId },
+    select: { pengajar: { select: { userId: true } } },
+  });
+  return kelas?.pengajar?.userId ?? null;
+}
+
+interface NotifyKartu {
+  id: string;
+  santriId: string;
+  santri: {
+    namaLengkap: string;
+    kelas: { id: string };
+  };
+  materi: { namaSurah: string };
+  ayatMulai: number;
+  ayatSelesai: number;
+  nilai: string | null;
+  isVerifiedByPengajar: boolean;
+}
+
+interface NotifyKartuVerif {
+  id: string;
+  santriId: string;
+  santri: { namaLengkap: string };
+  materi: { namaSurah: string };
+  ayatMulai: number;
+  ayatSelesai: number;
+  nilai: string | null;
+}
+
+function setoranLabel(kartu: {
+  santri: { namaLengkap: string };
+  materi: { namaSurah: string };
+  ayatMulai: number;
+  ayatSelesai: number;
+}): string {
+  return `${kartu.santri.namaLengkap} - ${kartu.materi.namaSurah} ${kartu.ayatMulai}-${kartu.ayatSelesai}`;
+}
+
+async function notifyOnCreate(kartu: NotifyKartu, sumberInput: SumberInput): Promise<void> {
+  const admins = await getAdminUserIds();
+  const label = setoranLabel(kartu);
+
+  if (sumberInput === SumberInput.RUMAH) {
+    const pengajarId = await getPengajarUserIdByKelas(kartu.santri.kelas.id);
+    const targets = pengajarId
+      ? [...new Set([pengajarId, ...admins])]
+      : admins;
+    void sendPushToUsers(targets, {
+      title: "Setoran rumah menunggu verifikasi",
+      body: `${label} · by orang tua`,
+      data: { kartuId: kartu.id },
+    });
+  } else {
+    void sendPushToUsers(admins, {
+      title: "Setoran baru masuk",
+      body: label,
+      data: { kartuId: kartu.id },
+    });
+  }
+
+  if (kartu.isVerifiedByPengajar && kartu.nilai) {
+    const ortuId = await getOrtuUserId(kartu.santriId);
+    if (ortuId) {
+      void sendPushToUsers([ortuId], {
+        title: `Nilai setoran ${kartu.santri.namaLengkap}`,
+        body: `${kartu.materi.namaSurah} ${kartu.ayatMulai}-${kartu.ayatSelesai}: ${kartu.nilai}`,
+        data: { kartuId: kartu.id },
+      });
+    }
+  }
+}
+
+async function notifyNilaiToOrtu(kartu: NotifyKartuVerif): Promise<void> {
+  if (!kartu.nilai) {
+    return;
+  }
+  const ortuId = await getOrtuUserId(kartu.santriId);
+  if (!ortuId) {
+    return;
+  }
+  void sendPushToUsers([ortuId], {
+    title: `Nilai setoran ${kartu.santri.namaLengkap}`,
+    body: `${kartu.materi.namaSurah} ${kartu.ayatMulai}-${kartu.ayatSelesai}: ${kartu.nilai}`,
+    data: { kartuId: kartu.id },
+  });
+}
+
+async function notifyVerifiedToOrtu(kartu: NotifyKartuVerif): Promise<void> {
+  const ortuId = await getOrtuUserId(kartu.santriId);
+  if (!ortuId) {
+    return;
+  }
+  void sendPushToUsers([ortuId], {
+    title: `Setoran ${kartu.santri.namaLengkap} sudah diperiksa`,
+    body: `${kartu.materi.namaSurah} ${kartu.ayatMulai}-${kartu.ayatSelesai} divalidasi pengajar`,
+    data: { kartuId: kartu.id },
+  });
+}
+
 export async function createKartuKontrol(
   user: AuthUser,
   input: CreateKartuKontrolInput
@@ -192,7 +313,7 @@ export async function createKartuKontrol(
     }
   }
 
-  return prisma.kartuKontrol.create({
+  const kartu = await prisma.kartuKontrol.create({
     data: {
       santriId: input.santriId,
       disimakOlehUserId: user.id,
@@ -210,6 +331,9 @@ export async function createKartuKontrol(
     },
     include: kartuInclude,
   });
+
+  void notifyOnCreate(kartu as unknown as NotifyKartu, sumberInput);
+  return kartu;
 }
 
 export async function listKartuKontrol(
@@ -382,7 +506,7 @@ export async function updateKartuKontrol(
     }
   }
 
-  return prisma.kartuKontrol.update({
+  const kartu = await prisma.kartuKontrol.update({
     where: { id },
     data: {
       santriId,
@@ -398,6 +522,14 @@ export async function updateKartuKontrol(
     },
     include: kartuInclude,
   });
+
+  const nilaiBerubah = existing.nilai !== kartu.nilai;
+  const statusBerubah =
+    !existing.isVerifiedByPengajar && kartu.isVerifiedByPengajar;
+  if ((nilaiBerubah || statusBerubah) && kartu.nilai) {
+    void notifyNilaiToOrtu(kartu as unknown as NotifyKartuVerif);
+  }
+  return kartu;
 }
 
 export async function verifyKartuKontrol(user: AuthUser, id: string) {
@@ -405,11 +537,13 @@ export async function verifyKartuKontrol(user: AuthUser, id: string) {
   if (kartu.isVerifiedByPengajar) {
     return kartu;
   }
-  return prisma.kartuKontrol.update({
+  const verified = await prisma.kartuKontrol.update({
     where: { id },
     data: { isVerifiedByPengajar: true },
     include: kartuInclude,
   });
+  void notifyVerifiedToOrtu(verified as unknown as NotifyKartuVerif);
+  return verified;
 }
 
 export async function deleteKartuKontrol(user: AuthUser, id: string) {

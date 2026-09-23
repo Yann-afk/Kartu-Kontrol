@@ -5,11 +5,15 @@ import * as authController from "../controllers/auth.controller";
 import * as kartuKontrolController from "../controllers/kartu-kontrol.controller";
 import * as masterController from "../controllers/master.controller";
 import * as adminController from "../controllers/admin.controller";
+import * as pushController from "../controllers/push.controller";
 
 export const routes = Router();
 
 routes.post("/auth/login", authController.login);
 routes.get("/auth/me", authenticate, authController.me);
+
+routes.post("/push/register", authenticate, pushController.register);
+routes.post("/push/unregister", authenticate, pushController.unregister);
 
 routes.get("/materi", authenticate, masterController.listMateri);
 routes.get("/kelas", authenticate, masterController.listKelas);
