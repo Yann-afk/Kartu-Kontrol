@@ -10,6 +10,23 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
+app.get("/", (_req, res) => {
+  res.json({
+    service: "HafalTrack API",
+    message:
+      "API aktif. Gunakan /api/health untuk cek status, atau lihat dokumentasi endpoint di bawah.",
+    endpoints: [
+      "POST /api/auth/login",
+      "GET /api/auth/me",
+      "GET /api/materi",
+      "GET /api/kelas",
+      "GET /api/santri",
+      "GET /api/kartu-kontrol",
+      "POST /api/kartu-kontrol",
+    ],
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "HafalTrack API aktif" });
 });
@@ -18,3 +35,5 @@ app.use("/api", routes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+export default app;
