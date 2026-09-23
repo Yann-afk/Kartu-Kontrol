@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { routes } from "./routes";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
+import { APP_VERSION } from "./config/version";
 
 export const app = express();
 
@@ -30,6 +31,10 @@ app.get("/", (_req, res) => {
 
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "HafalTrack API aktif" });
+});
+
+app.get("/api/version", (_req, res) => {
+  res.json({ success: true, data: APP_VERSION });
 });
 
 app.get("/api/download/apk", (_req, res) => {
