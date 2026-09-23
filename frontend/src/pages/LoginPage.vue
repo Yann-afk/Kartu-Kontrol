@@ -61,6 +61,22 @@
             <template v-else>Masuk</template>
           </ion-button>
         </form>
+
+        <div class="mt-4 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/50 p-4">
+          <p class="text-center text-sm font-semibold text-indigo-900">
+            Mau lewat aplikasi di HP?
+          </p>
+          <p class="mt-0.5 text-center text-xs text-slate-500">
+            Unduh APK terbaru, instal, dan login di sana.
+          </p>
+          <a
+            :href="APK_URL"
+            class="btn-gradient mt-3 flex w-full justify-center"
+          >
+            <ion-icon :icon="downloadOutline" class="text-lg" />
+            Unduh Aplikasi (APK)
+          </a>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -69,8 +85,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { IonButton, IonContent, IonPage, IonSpinner } from "@ionic/vue";
+import { IonButton, IonContent, IonIcon, IonPage, IonSpinner } from "@ionic/vue";
+import { downloadOutline } from "ionicons/icons";
 import { useAuthStore } from "@/stores/auth";
+
+const APK_URL = "https://backend-eight-snowy-39.vercel.app/api/download/apk";
 
 const router = useRouter();
 const auth = useAuthStore();
