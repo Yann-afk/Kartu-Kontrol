@@ -210,7 +210,7 @@ interface WhereBuild {
 function buildWhereSql({ santriIds, awal, akhir }: WhereBuild): Prisma.Sql {
   const conds: Prisma.Sql[] = [];
   if (santriIds) {
-    conds.push(Prisma.sql`"santriId" IN (${Prisma.join(santriIds)})`);
+    conds.push(Prisma.sql`"santriId"::text IN (${Prisma.join(santriIds)})`);
   }
   if (awal) {
     conds.push(Prisma.sql`"tanggalSetoran" >= ${awal}`);
