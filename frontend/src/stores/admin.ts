@@ -4,6 +4,7 @@ import api from "@/api/axios";
 import { extractError } from "@/utils/error";
 import type {
   AdminUser,
+  CreateKartuKontrolPayload,
   DashboardStats,
   FeedPage,
   JenisSetoran,
@@ -13,6 +14,7 @@ import type {
   Role,
   Santri,
   SumberInput,
+  UpdateSetoranPayload,
 } from "@/types";
 
 export const useAdminStore = defineStore("admin", () => {
@@ -348,6 +350,44 @@ export const useAdminStore = defineStore("admin", () => {
     }
   }
 
+  async function createSetoran(payload: CreateKartuKontrolPayload): Promise<KartuKontrol | null> {
+    submitting.value = true;
+    error.value = null;
+    try {
+      const res = await api.post("/admin/kartu-kontrol", payload);
+      const created = res.data.data as KartuKontrol;
+      feed.value = [created, ...feed.value];
+      feedMeta.value.total += 1;
+      void fetchStats();
+      return created;
+    } catch (err) {
+      error.value = extractError(err);
+      return null;
+    } finally {
+      submitting.value = false;
+    }
+  }
+
+  async function updateSetoran(id: string, payload: UpdateSetoranPayload): Promise<KartuKontrol | null> {
+    submitting.value = true;
+    error.value = null;
+    try {
+      const res = await api.patch(`/admin/kartu-kontrol/${id}`, payload);
+      const updated = res.data.data as KartuKontrol;
+      const index = feed.value.findIndex((k) => k.id === id);
+      if (index !== -1) {
+        feed.value[index] = updated;
+      }
+      void fetchStats();
+      return updated;
+    } catch (err) {
+      error.value = extractError(err);
+      return null;
+    } finally {
+      submitting.value = false;
+    }
+  }
+
   function reset(): void {
     stats.value = null;
     users.value = [];
@@ -395,6 +435,8 @@ export const useAdminStore = defineStore("admin", () => {
     fetchFeed,
     muatLebih,
     deleteSetoran,
+    createSetoran,
+    updateSetoran,
     reset,
   };
 });

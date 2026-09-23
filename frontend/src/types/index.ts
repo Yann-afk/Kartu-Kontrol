@@ -111,6 +111,19 @@ export interface CreateKartuKontrolPayload {
   nilai?: string | null;
   catatan?: string | null;
   tanggalSetoran?: string;
+  sumberInput?: SumberInput;
+}
+
+export interface UpdateSetoranPayload {
+  santriId?: string;
+  materiId?: string;
+  jenisSetoran?: JenisSetoran;
+  sumberInput?: SumberInput;
+  tanggalSetoran?: string | null;
+  ayatMulai?: number;
+  ayatSelesai?: number;
+  nilai?: string | null;
+  catatan?: string | null;
 }
 
 export interface AdminPengajarDetail {

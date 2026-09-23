@@ -3,7 +3,13 @@ import { JenisSetoran, Role, SumberInput } from "@prisma/client";
 import { asyncHandler } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
 import * as adminService from "../services/admin.service";
-import { listKartuKontrol } from "../services/kartu-kontrol.service";
+import {
+  createKartuKontrol,
+  listKartuKontrol,
+  updateKartuKontrol,
+  CreateKartuKontrolInput,
+  UpdateKartuKontrolInput,
+} from "../services/kartu-kontrol.service";
 
 function parseId(value: string): string {
   if (!value || typeof value !== "string") {
@@ -299,6 +305,132 @@ export const deleteMateri = asyncHandler(async (req: Request, res: Response) => 
   res.json({
     success: true,
     message: "Materi berhasil dihapus",
+  });
+});
+
+function parseSetoranTanggal(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) {
+    throw new ApiError(400, "tanggalSetoran tidak valid");
+  }
+  return date.toISOString();
+}
+
+function parseSetoranAngka(value: unknown, field: string): number {
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) {
+    throw new ApiError(400, `${field} harus bilangan bulat lebih dari 0`);
+  }
+  return num;
+}
+
+export const createSetoran = asyncHandler(async (req: Request, res: Response) => {
+  const b = req.body as Record<string, unknown>;
+
+  const santriId = requiredString(b.santriId, "santriId");
+  const materiId = requiredString(b.materiId, "materiId");
+
+  if (
+    b.jenisSetoran !== JenisSetoran.ZIYADAH &&
+    b.jenisSetoran !== JenisSetoran.MUROJAAH
+  ) {
+    throw new ApiError(400, "jenisSetoran harus ZIYADAH atau MUROJAAH");
+  }
+  if (
+    b.sumberInput !== SumberInput.SEKOLAH &&
+    b.sumberInput !== SumberInput.RUMAH
+  ) {
+    throw new ApiError(400, "sumberInput harus SEKOLAH atau RUMAH");
+  }
+
+  const mulai = parseSetoranAngka(b.ayatMulai, "ayatMulai");
+  const selesai = parseSetoranAngka(b.ayatSelesai, "ayatSelesai");
+  if (selesai < mulai) {
+    throw new ApiError(400, "ayatSelesai tidak boleh kurang dari ayatMulai");
+  }
+
+  const input: CreateKartuKontrolInput = {
+    santriId,
+    materiId,
+    jenisSetoran: b.jenisSetoran as JenisSetoran,
+    sumberInput: b.sumberInput as SumberInput,
+    ayatMulai: mulai,
+    ayatSelesai: selesai,
+    nilai:
+      typeof b.nilai === "string" && b.nilai.trim() !== ""
+        ? b.nilai.trim()
+        : null,
+    catatan: typeof b.catatan === "string" ? b.catatan.trim() : null,
+    tanggalSetoran: parseSetoranTanggal(b.tanggalSetoran),
+  };
+
+  const data = await createKartuKontrol(req.user!, input);
+  res.status(201).json({
+    success: true,
+    message: "Setoran hafalan berhasil ditambahkan",
+    data,
+  });
+});
+
+export const updateSetoran = asyncHandler(async (req: Request, res: Response) => {
+  const b = req.body as Record<string, unknown>;
+  const input: UpdateKartuKontrolInput = {};
+
+  if (b.santriId !== undefined) {
+    input.santriId = requiredString(b.santriId, "santriId");
+  }
+  if (b.materiId !== undefined) {
+    input.materiId = requiredString(b.materiId, "materiId");
+  }
+  if (b.jenisSetoran !== undefined) {
+    if (
+      b.jenisSetoran !== JenisSetoran.ZIYADAH &&
+      b.jenisSetoran !== JenisSetoran.MUROJAAH
+    ) {
+      throw new ApiError(400, "jenisSetoran harus ZIYADAH atau MUROJAAH");
+    }
+    input.jenisSetoran = b.jenisSetoran as JenisSetoran;
+  }
+  if (b.sumberInput !== undefined) {
+    if (
+      b.sumberInput !== SumberInput.SEKOLAH &&
+      b.sumberInput !== SumberInput.RUMAH
+    ) {
+      throw new ApiError(400, "sumberInput harus SEKOLAH atau RUMAH");
+    }
+    input.sumberInput = b.sumberInput as SumberInput;
+  }
+  if (b.tanggalSetoran !== undefined) {
+    input.tanggalSetoran =
+      typeof b.tanggalSetoran === "string" && b.tanggalSetoran.trim() !== ""
+        ? new Date(b.tanggalSetoran).toISOString()
+        : null;
+  }
+  if (b.ayatMulai !== undefined) {
+    input.ayatMulai = parseSetoranAngka(b.ayatMulai, "ayatMulai");
+  }
+  if (b.ayatSelesai !== undefined) {
+    input.ayatSelesai = parseSetoranAngka(b.ayatSelesai, "ayatSelesai");
+  }
+  if (b.nilai !== undefined) {
+    input.nilai =
+      typeof b.nilai === "string" && b.nilai.trim() !== ""
+        ? b.nilai.trim()
+        : null;
+  }
+  if (b.catatan !== undefined) {
+    input.catatan =
+      typeof b.catatan === "string" ? b.catatan.trim() || null : null;
+  }
+
+  const data = await updateKartuKontrol(req.user!, parseId(req.params.id), input);
+  res.json({
+    success: true,
+    message: "Data kartu kontrol berhasil diperbarui",
+    data,
   });
 });
 

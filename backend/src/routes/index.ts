@@ -73,3 +73,15 @@ routes.get(
   adminOnly,
   adminController.listSetoran
 );
+routes.post(
+  "/admin/kartu-kontrol",
+  authenticate,
+  adminOnly,
+  adminController.createSetoran
+);
+routes.patch(
+  "/admin/kartu-kontrol/:id",
+  authenticate,
+  adminOnly,
+  adminController.updateSetoran
+);
