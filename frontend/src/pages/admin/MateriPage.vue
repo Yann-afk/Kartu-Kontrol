@@ -63,6 +63,9 @@
             <InitialsAvatar :name="materi.namaSurah" color="amber" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(materi)">
               <div class="flex flex-wrap items-center gap-2">
+                <span class="shrink-0 rounded-lg bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-500">
+                  {{ materi.noUrut }}
+                </span>
                 <p class="truncate font-semibold text-slate-800">{{ materi.namaSurah }}</p>
                 <span class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
                   Juz {{ materi.juz }}
@@ -102,7 +105,11 @@
             <input v-model="form.namaSurah" class="field-input" placeholder="cth: Al-Baqarah" />
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="field-label">No</label>
+              <input v-model.number="form.noUrut" type="number" min="1" class="field-input" />
+            </div>
             <div>
               <label class="field-label">Juz</label>
               <input v-model.number="form.juz" type="number" min="1" max="30" class="field-input" />
@@ -160,10 +167,11 @@ const totalAyatMateri = computed(() =>
 
 const showForm = ref(false);
 const editing = ref<Materi | null>(null);
-const form = reactive({ namaSurah: "", juz: 1, totalAyat: 1 });
+const form = reactive({ namaSurah: "", noUrut: 1, juz: 1, totalAyat: 1 });
 
 function resetForm(): void {
   form.namaSurah = "";
+  form.noUrut = 1;
   form.juz = 1;
   form.totalAyat = 1;
 }
@@ -179,6 +187,7 @@ function openEdit(materi: Materi): void {
   admin.error = null;
   editing.value = materi;
   form.namaSurah = materi.namaSurah;
+  form.noUrut = materi.noUrut;
   form.juz = materi.juz;
   form.totalAyat = materi.totalAyat;
   showForm.value = true;
@@ -204,7 +213,11 @@ async function submit(): Promise<void> {
     await showToast("Total ayat harus bilangan bulat lebih dari 0", "danger");
     return;
   }
-  const payload = { namaSurah, juz: form.juz, totalAyat: form.totalAyat };
+  if (!Number.isInteger(form.noUrut) || form.noUrut < 1) {
+    await showToast("Nomor urut harus bilangan bulat lebih dari 0", "danger");
+    return;
+  }
+  const payload = { namaSurah, noUrut: form.noUrut, juz: form.juz, totalAyat: form.totalAyat };
   let ok: boolean;
   if (editing.value) {
     const updated = await admin.updateMateri(editing.value.id, payload);

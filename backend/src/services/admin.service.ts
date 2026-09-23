@@ -49,12 +49,14 @@ export interface UpdateSantriInput {
 
 export interface CreateMateriInput {
   namaSurah: string;
+  noUrut?: number;
   juz: number;
   totalAyat: number;
 }
 
 export interface UpdateMateriInput {
   namaSurah?: string;
+  noUrut?: number;
   juz?: number;
   totalAyat?: number;
 }
@@ -526,7 +528,7 @@ export async function deleteSantri(id: string) {
 
 export async function listMateriAdmin() {
   return prisma.materi.findMany({
-    orderBy: [{ juz: "asc" }, { namaSurah: "asc" }],
+    orderBy: { noUrut: "asc" },
   });
 }
 
@@ -544,10 +546,18 @@ function parseTotalAyat(value: number): number {
   return value;
 }
 
+function parseNoUrut(value: number): number {
+  if (!Number.isInteger(value) || value < 1) {
+    throw new ApiError(400, "noUrut harus bilangan bulat minimal 1");
+  }
+  return value;
+}
+
 export async function createMateri(input: CreateMateriInput) {
   return prisma.materi.create({
     data: {
       namaSurah: input.namaSurah.trim(),
+      noUrut: parseNoUrut(input.noUrut ?? 0),
       juz: parseJuz(input.juz),
       totalAyat: parseTotalAyat(input.totalAyat),
     },
@@ -563,6 +573,8 @@ export async function updateMateri(id: string, input: UpdateMateriInput) {
     where: { id },
     data: {
       namaSurah: input.namaSurah?.trim() ?? existing.namaSurah,
+      noUrut:
+        input.noUrut !== undefined ? parseNoUrut(input.noUrut) : existing.noUrut,
       juz: input.juz !== undefined ? parseJuz(input.juz) : existing.juz,
       totalAyat:
         input.totalAyat !== undefined

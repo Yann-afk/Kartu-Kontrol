@@ -54,6 +54,7 @@ export interface Santri {
 export interface Materi {
   id: string;
   namaSurah: string;
+  noUrut: number;
   juz: number;
   totalAyat: number;
 }

@@ -116,6 +116,7 @@ model Santri {
 model Materi {
   id         String @id @default(uuid()) @db.Uuid
   namaSurah  String
+  noUrut     Int    @default(0)
   juz        Int
   totalAyat  Int
 

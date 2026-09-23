@@ -7,7 +7,7 @@ import { getAccessibleSantriIds } from "../services/kartu-kontrol.service";
 
 export const listMateri = asyncHandler(async (_req: Request, res: Response) => {
   const materi = await prisma.materi.findMany({
-    orderBy: [{ juz: "asc" }, { namaSurah: "asc" }],
+    orderBy: { noUrut: "asc" },
   });
   res.json({ success: true, data: materi });
 });

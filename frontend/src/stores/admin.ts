@@ -241,7 +241,7 @@ export const useAdminStore = defineStore("admin", () => {
     }
   }
 
-  async function createMateri(payload: { namaSurah: string; juz: number; totalAyat: number }): Promise<Materi | null> {
+  async function createMateri(payload: { namaSurah: string; noUrut?: number; juz: number; totalAyat: number }): Promise<Materi | null> {
     submitting.value = true;
     error.value = null;
     try {
@@ -258,7 +258,7 @@ export const useAdminStore = defineStore("admin", () => {
     }
   }
 
-  async function updateMateri(id: string, payload: { namaSurah: string; juz: number; totalAyat: number }): Promise<Materi | null> {
+  async function updateMateri(id: string, payload: { namaSurah?: string; noUrut?: number; juz?: number; totalAyat?: number }): Promise<Materi | null> {
     submitting.value = true;
     error.value = null;
     try {

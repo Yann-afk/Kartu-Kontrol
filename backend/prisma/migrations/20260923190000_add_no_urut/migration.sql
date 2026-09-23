@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Materi" ADD COLUMN "noUrut" INTEGER NOT NULL DEFAULT 0;

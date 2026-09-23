@@ -132,12 +132,17 @@ async function getOrCreateKelas(namaKelas: string, pengajarId: string) {
   return prisma.kelas.create({ data: { namaKelas, pengajarId } });
 }
 
-async function getOrCreateMateri(namaSurah: string, juz: number, totalAyat: number) {
-  const existing = await prisma.materi.findFirst({ where: { namaSurah } });
+async function getOrCreateMateri(
+  m: { namaSurah: string; juz: number; totalAyat: number; noUrut: number }
+) {
+  const existing = await prisma.materi.findFirst({ where: { namaSurah: m.namaSurah } });
   if (existing) {
-    return existing;
+    return prisma.materi.update({
+      where: { id: existing.id },
+      data: { juz: m.juz, totalAyat: m.totalAyat, noUrut: m.noUrut },
+    });
   }
-  return prisma.materi.create({ data: { namaSurah, juz, totalAyat } });
+  return prisma.materi.create({ data: m });
 }
 
 async function main() {
@@ -238,8 +243,8 @@ async function main() {
     },
   });
 
-  for (const m of MATERI_SEED) {
-    await getOrCreateMateri(m.namaSurah, m.juz, m.totalAyat);
+  for (const [idx, m] of MATERI_SEED.entries()) {
+    await getOrCreateMateri({ ...m, noUrut: idx + 1 });
   }
 
   const materiNaba = await prisma.materi.findFirstOrThrow({

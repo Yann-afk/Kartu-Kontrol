@@ -438,7 +438,7 @@ export async function updateKartuKontrol(
   if (input.materiId !== undefined) {
     const target = await prisma.materi.findUnique({
       where: { id: input.materiId },
-      select: { id: true, namaSurah: true, juz: true, totalAyat: true },
+      select: { id: true, namaSurah: true, noUrut: true, juz: true, totalAyat: true },
     });
     if (!target) {
       throw new ApiError(404, "Materi tidak ditemukan");

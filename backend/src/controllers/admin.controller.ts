@@ -143,6 +143,7 @@ function parseUpdateSantriBody(body: Record<string, unknown>): adminService.Upda
 function parseMateriBody(body: Record<string, unknown>): adminService.CreateMateriInput {
   return {
     namaSurah: requiredString(body.namaSurah, "namaSurah"),
+    noUrut: body.noUrut !== undefined ? Number(body.noUrut) : undefined,
     juz: Number(body.juz),
     totalAyat: Number(body.totalAyat),
   };
@@ -152,6 +153,9 @@ function parseUpdateMateriBody(body: Record<string, unknown>): adminService.Upda
   const input: adminService.UpdateMateriInput = {};
   if (body.namaSurah !== undefined) {
     input.namaSurah = requiredString(body.namaSurah, "namaSurah");
+  }
+  if (body.noUrut !== undefined) {
+    input.noUrut = Number(body.noUrut);
   }
   if (body.juz !== undefined) {
     input.juz = Number(body.juz);
