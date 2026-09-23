@@ -10,7 +10,31 @@
     </ion-header>
 
     <ion-content class="ion-padding">
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-3xl space-y-4">
+        <div class="hero-gradient from-sky-600 via-blue-600 to-indigo-600">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-sky-200">
+                Kartu Kontrol
+              </p>
+              <h1 class="text-2xl font-black text-white">
+                {{ admin.feedMeta.total }} Setoran
+              </h1>
+              <p class="text-sm text-sky-100">
+                Seluruh setoran dari sekolah dan rumah.
+              </p>
+            </div>
+            <span class="flex gap-2">
+              <span class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-white/30">
+                {{ todaySetoran }} Hari ini
+              </span>
+              <span class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-white/30">
+                {{ unverifiedCount }} Perlu Verifikasi
+              </span>
+            </span>
+          </div>
+        </div>
+
         <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-100">
           <button
             v-for="f in sumberFilters"
@@ -35,18 +59,14 @@
           </button>
         </div>
 
-        <p class="mt-4 text-sm font-semibold text-slate-600">
-          {{ admin.feedMeta.total }} setoran
-        </p>
-
         <p
           v-if="admin.error"
-          class="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
+          class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
         >
           {{ admin.error }}
         </p>
 
-        <div class="mt-3 space-y-3">
+        <div class="space-y-3">
           <div v-if="admin.loading && admin.feed.length === 0" class="space-y-3">
             <div v-for="i in 4" :key="i" class="h-36 animate-pulse rounded-xl bg-slate-200" />
           </div>
@@ -236,7 +256,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   IonBackButton,
   IonButton,
@@ -264,6 +284,9 @@ import type {
 } from "@/types";
 
 const admin = useAdminStore();
+
+const todaySetoran = computed(() => admin.stats?.setoranHariIni ?? 0);
+const unverifiedCount = computed(() => admin.stats?.setoranBelumDiverifikasi ?? 0);
 
 const sumberFilter = ref<SumberInput | "">("");
 const jenisFilter = ref<JenisSetoran | "">("");
@@ -464,5 +487,6 @@ onMounted(() => {
   void admin.fetchFeed(1);
   void admin.fetchSantri();
   void admin.fetchMateri();
+  void admin.fetchStats();
 });
 </script>

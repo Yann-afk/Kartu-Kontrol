@@ -7,13 +7,32 @@
         </ion-buttons>
         <ion-title>Katalog Materi</ion-title>
         <ion-buttons slot="end">
-          <ion-button fill="outline" size="small" @click="openCreate">Tambah</ion-button>
+          <button type="button" class="btn-gradient hidden sm:inline-flex" @click="openCreate">Tambah</button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-3xl space-y-4">
+        <div class="hero-gradient from-amber-500 via-orange-600 to-rose-500">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-amber-200">
+                Katalog Hafalan
+              </p>
+              <h1 class="text-2xl font-black text-white">
+                {{ admin.materiList.length }} Surah
+              </h1>
+              <p class="text-sm text-amber-100">
+                Referensi surah, juz, dan jumlah ayat.
+              </p>
+            </div>
+            <span class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-white/30">
+              {{ totalAyatMateri }} Ayat
+            </span>
+          </div>
+        </div>
+
         <p
           v-if="admin.error"
           class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
@@ -21,27 +40,36 @@
           {{ admin.error }}
         </p>
 
-        <div v-if="loading && admin.materiList.length === 0" class="mt-3 space-y-3">
+        <button type="button" class="btn-gradient w-full sm:hidden" @click="openCreate">
+          + Tambah Materi
+        </button>
+
+        <div v-if="loading && admin.materiList.length === 0" class="space-y-3">
           <div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
-        <div v-else-if="admin.materiList.length === 0" class="mt-3">
+        <div v-else-if="admin.materiList.length === 0">
           <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
             Belum ada materi. Tambahkan lewat tombol "Tambah".
           </div>
         </div>
 
-        <div v-else class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div
             v-for="materi in admin.materiList"
             :key="materi.id"
-            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
+            class="row-card border-l-amber-500 ring-amber-100 hover:ring-amber-300"
           >
             <InitialsAvatar :name="materi.namaSurah" color="amber" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(materi)">
-              <p class="truncate font-semibold text-slate-800">{{ materi.namaSurah }}</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="truncate font-semibold text-slate-800">{{ materi.namaSurah }}</p>
+                <span class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                  Juz {{ materi.juz }}
+                </span>
+              </div>
               <p class="mt-0.5 text-sm text-slate-500">
-                Juz {{ materi.juz }} Â· {{ materi.totalAyat }} ayat
+                <span class="font-semibold text-orange-600">{{ materi.totalAyat }} ayat</span>
               </p>
             </button>
             <ion-button fill="clear" size="small" color="danger" @click="confirmDelete(materi)">
@@ -125,6 +153,10 @@ import type { Materi } from "@/types";
 const admin = useAdminStore();
 
 const loading = computed(() => admin.loading && admin.materiList.length === 0);
+
+const totalAyatMateri = computed(() =>
+  admin.materiList.reduce((acc, m) => acc + m.totalAyat, 0)
+);
 
 const showForm = ref(false);
 const editing = ref<Materi | null>(null);

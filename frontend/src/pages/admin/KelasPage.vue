@@ -7,13 +7,37 @@
         </ion-buttons>
         <ion-title>Manajemen Kelas</ion-title>
         <ion-buttons slot="end">
-          <ion-button fill="outline" size="small" @click="openCreate">Tambah</ion-button>
+          <button type="button" class="btn-gradient hidden sm:inline-flex" @click="openCreate">Tambah</button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-3xl space-y-4">
+        <div class="hero-gradient from-violet-600 via-purple-600 to-fuchsia-600">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-violet-200">
+                Kelola Kelas
+              </p>
+              <h1 class="text-2xl font-black text-white">
+                {{ admin.kelasList.length }} Kelas / Halaqoh
+              </h1>
+              <p class="text-sm text-violet-100">
+                Kelompok setoran beserta pengajarnya.
+              </p>
+            </div>
+            <span class="flex gap-2">
+              <span class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-white/30">
+                {{ totalSantriKelas }} Santri
+              </span>
+              <span class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-white/30">
+                {{ totalPengajar }} Pengajar
+              </span>
+            </span>
+          </div>
+        </div>
+
         <p
           v-if="admin.error"
           class="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600"
@@ -21,21 +45,25 @@
           {{ admin.error }}
         </p>
 
-        <div v-if="loading && admin.kelasList.length === 0" class="mt-3 space-y-3">
+        <button type="button" class="btn-gradient w-full sm:hidden" @click="openCreate">
+          + Tambah Kelas
+        </button>
+
+        <div v-if="loading && admin.kelasList.length === 0" class="space-y-3">
           <div v-for="i in 3" :key="i" class="h-20 animate-pulse rounded-2xl bg-slate-200" />
         </div>
 
-        <div v-else-if="admin.kelasList.length === 0" class="mt-3">
+        <div v-else-if="admin.kelasList.length === 0">
           <div class="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
             Belum ada kelas. Tambahkan lewat tombol "Tambah".
           </div>
         </div>
 
-        <div v-else class="mt-3 space-y-3">
+        <div v-else class="space-y-3">
           <div
             v-for="kelas in admin.kelasList"
             :key="kelas.id"
-            class="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:ring-indigo-200"
+            class="row-card border-l-violet-500 ring-violet-100 hover:ring-violet-300"
           >
             <InitialsAvatar :name="kelas.namaKelas" color="violet" />
             <button type="button" class="min-w-0 flex-1 text-left" @click="openEdit(kelas)">
@@ -43,7 +71,7 @@
               <p class="mt-0.5 truncate text-sm text-slate-500">
                 <span class="font-medium text-slate-600">{{ kelas.pengajar?.namaLengkap ?? "Belum ada pengajar" }}</span>
                 <span class="text-slate-300"> Â· </span>
-                {{ kelas._count?.santri ?? 0 }} santri
+                <span class="font-semibold text-violet-600">{{ kelas._count?.santri ?? 0 }} santri</span>
               </p>
             </button>
             <ion-button fill="clear" size="small" color="danger" @click="confirmDelete(kelas.id, kelas.namaKelas)">
@@ -132,6 +160,14 @@ import type { Kelas } from "@/types";
 const admin = useAdminStore();
 
 const loading = computed(() => admin.loading && admin.kelasList.length === 0);
+
+const totalSantriKelas = computed(() =>
+  admin.kelasList.reduce((acc, k) => acc + (k._count?.santri ?? 0), 0)
+);
+
+const totalPengajar = computed(
+  () => new Set(admin.kelasList.map((k) => k.pengajar?.id).filter(Boolean)).size
+);
 
 const showForm = ref(false);
 const editing = ref<Kelas | null>(null);
