@@ -6,14 +6,23 @@ import * as kartuKontrolController from "../controllers/kartu-kontrol.controller
 import * as masterController from "../controllers/master.controller";
 import * as adminController from "../controllers/admin.controller";
 import * as pushController from "../controllers/push.controller";
+import * as pesanController from "../controllers/pesan.controller";
+import * as laporanController from "../controllers/laporan.controller";
 
 export const routes = Router();
 
 routes.post("/auth/login", authController.login);
 routes.get("/auth/me", authenticate, authController.me);
+routes.patch("/auth/me", authenticate, authController.updateMe);
 
 routes.post("/push/register", authenticate, pushController.register);
 routes.post("/push/unregister", authenticate, pushController.unregister);
+
+routes.get("/pesan", authenticate, pesanController.list);
+routes.post("/pesan", authenticate, pesanController.create);
+
+routes.get("/rekap", authenticate, laporanController.rekap);
+routes.get("/statistik", authenticate, laporanController.statistik);
 
 routes.get("/materi", authenticate, masterController.listMateri);
 routes.get("/kelas", authenticate, masterController.listKelas);

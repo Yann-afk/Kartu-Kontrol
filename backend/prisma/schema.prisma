@@ -35,6 +35,7 @@ model User {
   orangTua      OrangTua?
   setoranDisimak KartuKontrol[] @relation("DisimakOleh")
   pushTokens    PushToken[]
+  pesanSent     Pesan[] @relation("PesanSent")
 }
 
 model PushToken {
@@ -47,6 +48,19 @@ model PushToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Pesan {
+  id           String   @id @default(uuid()) @db.Uuid
+  santriId     String   @db.Uuid
+  senderUserId String   @db.Uuid
+  isi          String   @db.Text
+  createdAt    DateTime @default(now())
+
+  santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  sender User   @relation("PesanSent", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([santriId, createdAt])
 }
 
 model Pengajar {
@@ -93,6 +107,7 @@ model Santri {
   orangTua     OrangTua      @relation(fields: [orangTuaId], references: [id], onDelete: Restrict)
   kelas        Kelas         @relation(fields: [kelasId], references: [id], onDelete: Restrict)
   kartuKontrol KartuKontrol[]
+  pesan        Pesan[]
 
   @@index([orangTuaId])
   @@index([kelasId])

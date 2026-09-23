@@ -77,3 +77,81 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 });
+
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const body = req.body ?? {};
+
+  const namaLengkap =
+    typeof body.namaLengkap === "string" && body.namaLengkap.trim() !== ""
+      ? body.namaLengkap.trim()
+      : undefined;
+  const noHp =
+    typeof body.noHp === "string" && body.noHp.trim() !== ""
+      ? body.noHp.trim().slice(0, 20)
+      : null;
+  const nip =
+    typeof body.nip === "string" && body.nip.trim() !== ""
+      ? body.nip.trim().slice(0, 30)
+      : null;
+  const alamat =
+    typeof body.alamat === "string" && body.alamat.trim() !== ""
+      ? body.alamat.trim()
+      : null;
+
+  if (user.role === "PENGAJAR") {
+    const ownId = user.id;
+    const data: { namaLengkap?: string; noHp?: string | null; nip?: string | null } = {};
+    if (namaLengkap !== undefined) data.namaLengkap = namaLengkap;
+    if (noHp !== undefined) data.noHp = noHp;
+    if (nip !== undefined) data.nip = nip;
+
+    const pengajar = await prisma.pengajar.findUnique({ where: { userId: ownId } });
+    if (!pengajar) {
+      throw new ApiError(404, "Profil pengajar tidak ditemukan");
+    }
+    await prisma.pengajar.update({ where: { userId: ownId }, data });
+  } else if (user.role === "ORANG_TUA") {
+    const ownId = user.id;
+    const data: { namaLengkap?: string; noHp?: string | null; alamat?: string | null } = {};
+    if (namaLengkap !== undefined) data.namaLengkap = namaLengkap;
+    if (noHp !== undefined) data.noHp = noHp;
+    if (alamat !== undefined) data.alamat = alamat;
+
+    const orangTua = await prisma.orangTua.findUnique({ where: { userId: ownId } });
+    if (!orangTua) {
+      throw new ApiError(404, "Profil orang tua tidak ditemukan");
+    }
+    await prisma.orangTua.update({ where: { userId: ownId }, data });
+  } else {
+    throw new ApiError(403, "Profil tidak dapat diubah untuk peran ini");
+  }
+
+  const updated = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      pengajar: { select: { id: true, namaLengkap: true, nip: true, noHp: true } },
+      orangTua: { select: { id: true, namaLengkap: true, noHp: true, alamat: true } },
+    },
+  });
+
+  const namaLengkapBaru =
+    updated?.pengajar?.namaLengkap ?? updated?.orangTua?.namaLengkap ?? null;
+
+  res.json({
+    success: true,
+    message: "Profil berhasil diperbarui",
+    data: {
+      id: updated!.id,
+      email: updated!.email,
+      role: updated!.role,
+      namaLengkap: namaLengkapBaru,
+      createdAt: updated!.createdAt,
+      profil: updated!.pengajar ?? updated!.orangTua ?? null,
+    },
+  });
+});
